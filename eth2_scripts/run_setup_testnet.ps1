@@ -1,0 +1,1 @@
+docker run --rm -it -v ~/node-setup-current/eth2_scripts/gened:/gened ecredits/staking-deposit-cli:latest -c "node /setup/eth2_setup_node.js testnet" 

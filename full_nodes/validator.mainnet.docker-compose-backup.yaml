@@ -1,0 +1,118 @@
+services:
+  geth:
+    stop_signal: SIGINT
+    image: blocktradeproduction.azurecr.io/ecredits/node:1.13.15-ecs-2
+    networks: 
+      - ecredits
+    volumes:
+      - /var/lib/eSync/mainnet/datadir-eth1:/root/.ethereum
+      - ./jwt.mainnet.hex:/etc/config/jwt.hex
+    restart: on-failure
+    hostname: ecs1-node
+    ports:
+      - 30303:30303/tcp # p2p
+      - 30303:30303/udp
+      - 6061:6061   # metrics
+      - 8545:8545 # rpc
+      - 8551:8551 # authrpc 
+    environment:
+      - DATA_DIR_ETH1
+      - ETHERBASE
+    entrypoint:
+      - sh
+      - -c
+      - >
+        set -xe;
+        geth
+        --ecs
+        --port 30303
+        --discovery.port 30303
+        --http
+        --http.api txpool,eth,net,web3
+        --http.addr "0.0.0.0"
+        --http.vhosts "*"
+        --http.corsdomain "*"
+        --http.port 8545
+        --miner.gasprice 1
+        --miner.gaslimit 10000000
+        --rpc.txfeecap 0
+        --verbosity 3
+        --metrics
+        --metrics.addr 0.0.0.0
+        --metrics.port 6061
+        --metrics.expensive
+        --authrpc.jwtsecret=/etc/config/jwt.hex
+        --rpc.enabledeprecatedpersonal
+        --nat extip:${SELF_IP}
+        --authrpc.addr 0.0.0.0
+        --authrpc.vhosts "*"
+        --authrpc.port 8551
+        --miner.etherbase ${ETHERBASE_ACCOUNT}
+  beacon:
+    image: blocktradeproduction.azurecr.io/ecredits/lighthouse:5.2.4
+    networks: 
+      - ecredits
+    volumes:
+      - /var/lib/eSync/mainnet/datadir-eth2:/root/.lighthouse
+      - ./jwt.mainnet.hex:/etc/config/jwt.hex
+    restart: on-failure
+    hostname: ecs2-beacon
+    ports:
+      - 9000:9000/udp # p2p udp
+      - 9000:9000/tcp # p2p tcp
+      - 9001:9001/tcp # quic
+      - 5051:5051/tcp # rest API
+      - 8080:8080/tcp   # metrics
+    entrypoint:
+      - sh
+      - -c
+      - >
+        set -xe;
+        
+        lighthouse beacon_node
+        --network ecs
+        --datadir /root/.lighthouse
+        --execution-jwt /etc/config/jwt.hex
+        --execution-endpoint http://geth:8551
+        --port 9000
+        --http
+        --http-address 0.0.0.0
+        --http-port 5051
+        --enr-address ${SELF_IP}
+        --discovery-port 9000
+        --boot-nodes enr:-L24QLJkwlIXPv4XOEvA1lPh9Eq1xfMZVVNHtXy1TDm-cw9RMBdKQpdysThJXeBI1RJL4-04twAC5Id35pcUpvAXcjA8h2F0dG5ldHOIAADgAQAAAACEZXRoMpCSupEyAgYwAP__________gmlkgnY0gmlwhDPS-D6EcXVpY4IjKYlzZWNwMjU2azGhAnEw1YCxCp-AixKlwu2ie7n_IwfIsTeQfjCJCglsgNWGiHN5bmNuZXRzD4N0Y3CCIyg
+        --trusted-peers 16Uiu2HAm33XEorBR5d7fbqVJMe8YjgevbeiVyMC91KshJYaLEWnh
+        --metrics
+        --metrics-address 0.0.0.0
+        --metrics-port 8080
+        --subscribe-all-subnets
+        --checkpoint-sync-url http://51.210.248.62:80/
+  validator:
+    image: blocktradeproduction.azurecr.io/ecredits/lighthouse:5.2.4
+    networks: 
+      - ecredits
+    volumes:
+      - /var/lib/eSync/mainnet/datadir-eth2-validator/:/root/.lighthouse
+    restart: on-failure
+    hostname: ecs2-validator
+    ports:
+      - 8081:8081/tcp   # metrics
+    entrypoint:
+      - sh
+      - -c
+      - >
+        set -xe;
+
+        lighthouse
+        --network ecs
+        vc
+        --init-slashing-protection
+        --datadir /root/.lighthouse
+        --beacon-nodes=http://beacon:5051
+        --metrics
+        --enable-high-validator-count-metrics
+        --metrics-address 0.0.0.0
+        --metrics-port 8081
+        --suggested-fee-recipient ${FEE_RECIPIENT_ACCOUNT}
+networks:
+  ecredits:

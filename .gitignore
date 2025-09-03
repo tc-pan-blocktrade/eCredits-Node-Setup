@@ -1,0 +1,14 @@
+# ---- Validator & Node Secrets ----
+# Never commit validator keys
+eth2_scripts/gened/
+
+# Never commit environment variables
+full_nodes/.env
+*.env
+
+# Never commit passwords or jwt secrets (these are outside repo, but just in case)
+var/lib/esync/mainnet/password.cfg
+var/lib/esync/mainnet/jwt.mainnet.hex
+
+# Never commit Zone.Identifier files
+*.Zone.Identifier

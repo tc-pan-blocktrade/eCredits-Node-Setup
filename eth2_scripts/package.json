@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "csv": "^6.3.8",
+    "ethers": "^6.7.1",
+    "keythereum": "^2.0.0",
+    "parse-csv-stream": "^2.0.2",
+    "python-shell": "^5.0.0",
+    "readline-sync": "^1.4.10",
+    "stream": "^0.0.2"
+  }
+}
