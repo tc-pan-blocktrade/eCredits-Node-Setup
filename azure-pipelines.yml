@@ -64,7 +64,7 @@ steps:
           fi
 
           echo "🖥️ Connecting to $USER@$IP..."
-          if ! ssh -o BatchMode=yes -o ConnectTimeout=15 "$USER@$IP" 'hostname >/dev/null 2>&1'; then
+          if ! ssh -o BatchMode=yes -o ConnectTimeout=60 "$USER@$IP" 'hostname >/dev/null 2>&1'; then
             echo "❌ ERROR: Failed to connect to $USER@$IP – exiting pipeline."
             exit 1
           fi
