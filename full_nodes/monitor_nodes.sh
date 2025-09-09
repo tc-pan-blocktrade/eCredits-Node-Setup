@@ -5,11 +5,11 @@ POS_VALIDATOR_CONTAINERNAME="full_nodes-validator-1"
 POS_BEACON_CONTAINERNAME="full_nodes-beacon-1"
 POS_GETH_CONTAINERNAME="full_nodes-geth-1"
 datadir="/var/lib/esync/mainnet"
-rpcport=5052  # Set to your Beacon node RPC port if different
+rpcport=5051  # Set to your Beacon node RPC port if different
 
 print_node_status() {
     clear
-    container_state=$(docker ps --format "{{.Names}},{{.Status}}" | grep geth)
+    container_state=$(docker ps --format "{{.Names}},{{.Status}}" | grep geth || true)
 
     validator_container_runs=$(docker ps --format "{{.Names}},{{.Image}},{{.Status}}" | grep $POS_VALIDATOR_CONTAINERNAME || true)
     IFS=',' read -r -a validator_container_status <<<"$validator_container_runs"
@@ -22,7 +22,8 @@ print_node_status() {
 
     echo "--------------------------------------------------------------------------------"
     echo "|                              NODE STATUS                                     |"
-    echo "|                            press q to return                                   |"
+    echo "|                      Refreshes every 10 seconds                               |"
+    echo "|                          press q to return                                   |"
     echo "--------------------------------------------------------------------------------"
 
     if [[ -z $validator_container_runs ]]; then
@@ -72,6 +73,42 @@ print_node_status() {
     echo "--------------------------------------------------------------------------------"
 }
 
+follow_logs() {
+    local service=$1
+    echo "-----------------------------"
+    echo "Showing logs for $service..."
+    echo "Press q or Ctrl+C to return to menu"
+    echo "-----------------------------"
+
+    # Run docker logs in background
+    docker compose -f ~/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml logs -f --tail=10 "$service" &
+    LOG_PID=$!
+
+    # Function to cleanup and exit
+    cleanup_logs() {
+        kill $LOG_PID 2>/dev/null || true
+        wait $LOG_PID 2>/dev/null || true
+        trap - INT TERM
+        return 0
+    }
+
+    # Trap Ctrl+C and TERM signals
+    trap cleanup_logs INT TERM
+
+    # Monitor for 'q' key press with timeout to check if background process is still running
+    while kill -0 $LOG_PID 2>/dev/null; do
+        if read -t 1 -rsn1 input 2>/dev/null; then
+            if [[ $input =~ [qQ] ]]; then
+                cleanup_logs
+                return 0
+            fi
+        fi
+    done
+
+    # If we get here, the docker logs process ended
+    cleanup_logs
+}
+
 while true; do
     clear
     echo "============================="
@@ -87,23 +124,22 @@ while true; do
 
     case $choice in
         1)
+            # Trap Ctrl+C to return to main menu
+            trap "echo; echo 'Returning to main menu...'; trap - INT; break" INT
             while true; do
                 print_node_status
-                read -t 5 -N 1 input
-                if [[ $input =~ [qQ] ]]; then
-                    break
+                # refresh every 10 seconds or exit on keypress
+                if read -t 10 -rsn1 input; then
+                    if [[ $input =~ [qQ] ]]; then
+                        break
+                    fi
                 fi
             done
+            trap - INT
             ;;
-        2)
-            docker compose -f ~/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml logs -f --tail=10 geth
-            ;;
-        3)
-            docker compose -f ~/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml logs -f --tail=10 beacon
-            ;;
-        4)
-            docker compose -f ~/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml logs -f --tail=10 validator
-            ;;
+        2) follow_logs geth ;;
+        3) follow_logs beacon ;;
+        4) follow_logs validator ;;
         5)
             echo "Exiting..."
             exit 0
