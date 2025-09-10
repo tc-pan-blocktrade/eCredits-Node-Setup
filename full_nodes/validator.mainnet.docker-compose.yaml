@@ -5,8 +5,8 @@ services:
     networks: 
       - ecredits
     volumes:
-      - /var/lib/esync/mainnet/datadir-eth1:/root/.ethereum
-      - /var/lib/esync/mainnet:/etc/config
+      - /var/lib/eSync/mainnet/datadir-eth1:/root/.ethereum
+      - /var/lib/eSync/mainnet:/etc/config
       # This needs to be remounted properly
     restart: on-failure
     hostname: ecs1-node
@@ -18,8 +18,8 @@ services:
       - 8551:8551 # authrpc 
     environment:
       - DATA_DIR_ETH1
-      - SELF_IP=${SELF_IP}
-      - ETHERBASE=${ETHERBASE}
+      - EXTERNAL_IP=${EXTERNAL_IP}
+      - ETHERBASE_ADDRESS=${ETHERBASE_ADDRESS}
     entrypoint:
       - sh
       - -c
@@ -45,20 +45,20 @@ services:
         --metrics.expensive
         --authrpc.jwtsecret=/etc/config/jwt.mainnet.hex
         --rpc.enabledeprecatedpersonal
-        --nat "extip:${SELF_IP}"
+        --nat "extip:${EXTERNAL_IP}"
         --authrpc.addr 0.0.0.0
         --authrpc.vhosts "*"
         --authrpc.port 8551
-        --miner.etherbase ${ETHERBASE}
+        --miner.etherbase ${ETHERBASE_ADDRESS}
   beacon:
     image: ecredits/lighthouse:5.2.4
     networks: 
       - ecredits
     volumes:
-      - /var/lib/esync/mainnet/datadir-eth2:/root/.lighthouse
-      - /var/lib/esync/mainnet:/etc/config
+      - /var/lib/eSync/mainnet/datadir-eth2:/root/.lighthouse
+      - /var/lib/eSync/mainnet:/etc/config
     environment:
-      - SELF_IP=${SELF_IP}
+      - EXTERNAL_IP=${EXTERNAL_IP}
     restart: on-failure
     hostname: ecs2-beacon
     ports:
@@ -82,7 +82,7 @@ services:
         --http
         --http-address 0.0.0.0
         --http-port 5051
-        --enr-address ${SELF_IP}
+        --enr-address ${EXTERNAL_IP}
         --discovery-port 9000
         --boot-nodes enr:-L24QLJkwlIXPv4XOEvA1lPh9Eq1xfMZVVNHtXy1TDm-cw9RMBdKQpdysThJXeBI1RJL4-04twAC5Id35pcUpvAXcjA8h2F0dG5ldHOIAADgAQAAAACEZXRoMpCSupEyAgYwAP__________gmlkgnY0gmlwhDPS-D6EcXVpY4IjKYlzZWNwMjU2azGhAnEw1YCxCp-AixKlwu2ie7n_IwfIsTeQfjCJCglsgNWGiHN5bmNuZXRzD4N0Y3CCIyg
         --trusted-peers 16Uiu2HAm33XEorBR5d7fbqVJMe8YjgevbeiVyMC91KshJYaLEWnh
@@ -96,9 +96,9 @@ services:
     networks: 
       - ecredits
     volumes:
-      - /var/lib/esync/mainnet/datadir-eth2-validator/:/root/.lighthouse
+      - /var/lib/eSync/mainnet/datadir-eth2-validator/:/root/.lighthouse
     environment:
-      - FEE_RECIPIENT=${FEE_RECIPIENT}
+      - FEE_RECIPIENT_ADDRESS=${FEE_RECIPIENT_ADDRESS}
     restart: on-failure
     hostname: ecs2-validator
     ports:
@@ -119,6 +119,6 @@ services:
         --enable-high-validator-count-metrics
         --metrics-address 0.0.0.0
         --metrics-port 8081
-        --suggested-fee-recipient ${FEE_RECIPIENT}
+        --suggested-fee-recipient ${FEE_RECIPIENT_ADDRESS}
 networks:
   ecredits:

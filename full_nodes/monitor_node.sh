@@ -4,7 +4,7 @@ set -euo pipefail
 POS_VALIDATOR_CONTAINERNAME="full_nodes-validator-1"
 POS_BEACON_CONTAINERNAME="full_nodes-beacon-1"
 POS_GETH_CONTAINERNAME="full_nodes-geth-1"
-datadir="/var/lib/esync/mainnet"
+datadir="/var/lib/eSync/mainnet"
 rpcport=5051  # Set to your Beacon node RPC port if different
 
 print_node_status() {

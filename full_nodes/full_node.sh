@@ -4,10 +4,9 @@ set -euo pipefail
 ### -------------------------
 ### CONFIGURATION
 ### -------------------------
-datadir="/var/lib/esync/mainnet"
+datadir="/var/lib/eSync/mainnet"
 passwordpath="$datadir/password.cfg"
 jwt_file="$datadir/jwt.mainnet.hex"
-network="mainnet"   # Change if using testnet
 setup_script="$HOME/node-setup-current/eth2_scripts/run_setup_mainnet.ps1"
 compose_file="$HOME/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml"
 
@@ -163,7 +162,7 @@ docker run --rm -it \
     -v "$validator_dir":/root/.lighthouse \
     -v "$passwordpath":/password.cfg \
     --name validatorimport ecredits/lighthouse:latest \
-    lighthouse --network "$network" account validator import \
+    lighthouse --network mainnet account validator import \
     --datadir /root/.lighthouse \
     --directory /keys \
     --reuse-password \
@@ -177,14 +176,14 @@ env_file="$compose_dir/.env"
 
 if [ ! -f "$env_file" ]; then
     echo "[*] Creating .env file at $env_file..."
-    read -p "Set the Etherbase address: " etherbase
-    read -p "Set the Fee recipient address: " fee_recipient
-    self_ip=$(hostname -I | awk '{print $1}')
+    read -p "Set the Etherbase address: " etherbase_address
+    read -p "Set the Fee recipient address: " fee_recipient_address
+    external_ip=$(hostname -I | awk '{print $1}')
 
     cat <<EOF | tee "$env_file" > /dev/null
-ETHERBASE=$etherbase
-FEE_RECIPIENT=$fee_recipient
-SELF_IP=$self_ip
+ETHERBASE_ADDRESS=$etherbase_address
+FEE_RECIPIENT_ADDRESS=$fee_recipient_address
+EXTERNAL_IP=$external_ip
 EOF
 
     echo "[*] .env file created successfully."

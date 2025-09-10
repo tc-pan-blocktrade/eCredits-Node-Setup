@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-datadir="/var/lib/esync/mainnet"
+datadir="/var/lib/Esync/mainnet"
 validator_keys_dir="$datadir/datadir-eth2-validator/validators"
 passwordpath="$datadir/password.cfg"
 rpcport="5051"
-network="mainnet"
 
 exit_phrase="Exit my validator"
 
