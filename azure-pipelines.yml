@@ -82,6 +82,8 @@ steps:
               git reset --hard origin/main
             else
               git clone -b main https://github.com/tc-pan-blocktrade/eCredits-Node-Setup node-setup-current
+              chmod +x node-setup-current/full_nodes/*
+              chmod +x node-setup-current/eth2_scripts/*
               cd node-setup-current
             fi
 

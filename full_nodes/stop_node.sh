@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-compose_file="$HOME/node-setup-current/full_nodes/validator.mainnet.docker-compose-2.yaml"
+compose_file="$HOME/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml"
 
 echo "[*] Stopping validator node..."
 

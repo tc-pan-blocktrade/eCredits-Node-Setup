@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-datadir="/var/lib/Esync/mainnet"
+datadir="/var/lib/eSync/mainnet"
 validator_keys_dir="$datadir/datadir-eth2-validator/validators"
 passwordpath="$datadir/password.cfg"
 rpcport="5051"
