@@ -5,7 +5,7 @@ set -euo pipefail
 ### CONFIGURATION
 ### -------------------------
 compose_file="$HOME/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml"
-datadir="/var/lib/eSync/mainnet"
+datadir="/var/lib/esync/mainnet"
 passwordpath="$datadir/password.cfg"
 gened_dir="$HOME/node-setup-current/eth2_scripts/gened"
 validator_dir="$datadir/datadir-eth2-validator"

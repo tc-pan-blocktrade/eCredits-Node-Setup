@@ -2,11 +2,11 @@ services:
   geth:
     stop_signal: SIGINT
     image: ecredits/node:1.13.15-ecs-2
-    networks: 
+    networks:
       - ecredits
     volumes:
-      - /var/lib/eSync/mainnet/datadir-eth1:/root/.ethereum
-      - /var/lib/eSync/mainnet:/etc/config
+      - /var/lib/esync/mainnet/datadir-eth1:/root/.ethereum
+      - /var/lib/esync/mainnet:/etc/config
       # This needs to be remounted properly
     restart: on-failure
     hostname: ecs1-node
@@ -15,7 +15,7 @@ services:
       - 30303:30303/udp
       - 6061:6061   # metrics
       - 8545:8545 # rpc
-      - 8551:8551 # authrpc 
+      - 8551:8551 # authrpc
     environment:
       - DATA_DIR_ETH1
       - EXTERNAL_IP=${EXTERNAL_IP}
@@ -52,11 +52,11 @@ services:
         --miner.etherbase ${ETHERBASE_ADDRESS}
   beacon:
     image: ecredits/lighthouse:5.2.4
-    networks: 
+    networks:
       - ecredits
     volumes:
-      - /var/lib/eSync/mainnet/datadir-eth2:/root/.lighthouse
-      - /var/lib/eSync/mainnet:/etc/config
+      - /var/lib/esync/mainnet/datadir-eth2:/root/.lighthouse
+      - /var/lib/esync/mainnet:/etc/config
     environment:
       - EXTERNAL_IP=${EXTERNAL_IP}
     restart: on-failure
@@ -72,7 +72,7 @@ services:
       - -c
       - >
         set -xe;
-        
+
         lighthouse beacon_node
         --network ecs
         --datadir /root/.lighthouse
@@ -93,10 +93,10 @@ services:
         --checkpoint-sync-url http://51.210.248.62:80/
   validator:
     image: ecredits/lighthouse:5.2.4
-    networks: 
+    networks:
       - ecredits
     volumes:
-      - /var/lib/eSync/mainnet/datadir-eth2-validator/:/root/.lighthouse
+      - /var/lib/esync/mainnet/datadir-eth2-validator/:/root/.lighthouse
     environment:
       - FEE_RECIPIENT_ADDRESS=${FEE_RECIPIENT_ADDRESS}
     restart: on-failure

@@ -4,8 +4,7 @@ set -euo pipefail
 POS_VALIDATOR_CONTAINERNAME="full_nodes-validator-1"
 POS_BEACON_CONTAINERNAME="full_nodes-beacon-1"
 POS_GETH_CONTAINERNAME="full_nodes-geth-1"
-datadir="/var/lib/eSync/mainnet"
-rpcport=5051  # Set to your Beacon node RPC port if different
+datadir="/var/lib/esync/mainnet"
 
 print_node_status() {
     clear
@@ -49,10 +48,10 @@ print_node_status() {
         echo " Current geth peers: $(docker exec -it $POS_GETH_CONTAINERNAME geth --exec admin.peers.length attach | sed -n 2p)"
         echo ""
         echo " Beacon node peer count: "
-        curl -s -X GET "http://localhost:$rpcport/eth/v1/node/peer_count" -H 'accept: application/json'
+        curl -s -X GET "http://localhost:5051/eth/v1/node/peer_count" -H 'accept: application/json'
         echo ""
         echo " Beacon health:"
-        health_status_code=$(curl -o /dev/null -s -w "%{http_code}" -X GET "http://localhost:$rpcport/eth/v1/node/health")
+        health_status_code=$(curl -o /dev/null -s -w "%{http_code}" -X GET "http://localhost:5051/eth/v1/node/health")
         case $health_status_code in
             200) health_status_description="Healthy" ;;
             206) health_status_description="Syncing" ;;
@@ -77,7 +76,7 @@ follow_logs() {
     local service=$1
     echo "-----------------------------"
     echo "Showing logs for $service..."
-    echo "Press q or Ctrl+C to return to menu"
+    echo "Press Ctrl+C twice to return to menu"
     echo "-----------------------------"
 
     # Run docker logs in background

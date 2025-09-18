@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-datadir="/var/lib/eSync/mainnet"
+datadir="/var/lib/esync/mainnet"
 validator_keys_dir="$datadir/datadir-eth2-validator/validators"
 passwordpath="$datadir/password.cfg"
-rpcport="5051"
 
 exit_phrase="Exit my validator"
 
@@ -127,7 +126,7 @@ expect <<EOF
         --name validatorexit ecredits/lighthouse:latest \
         lighthouse --network ecs account validator exit \
         --keystore /keystore.json --password-file /password.cfg \
-        --beacon-node http://beacon:$rpcport
+        --beacon-node http://beacon:5051
     expect {
         "Enter the exit phrase" {
             send "$exit_phrase\r"

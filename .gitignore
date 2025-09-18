@@ -1,4 +1,3 @@
-# ---- Validator & Node Secrets ----
 # Never commit validator keys
 eth2_scripts/gened/
 

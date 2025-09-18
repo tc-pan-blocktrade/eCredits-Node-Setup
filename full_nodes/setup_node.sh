@@ -4,7 +4,7 @@ set -euo pipefail
 ### -------------------------
 ### CONFIGURATION
 ### -------------------------
-datadir="/var/lib/eSync/mainnet"
+datadir="/var/lib/esync/mainnet"
 passwordpath="$datadir/password.cfg"
 jwt_file="$datadir/jwt.mainnet.hex"
 setup_script="$HOME/node-setup-current/eth2_scripts/run_setup_mainnet.ps1"
@@ -38,6 +38,15 @@ if [ ! -f /etc/apt/sources.list.d/docker.list ]; then
     sudo apt-get update -y
 else
     echo "[*] Docker repository already configured, skipping..."
+fi
+
+# Install Expect
+if ! command -v expect &>/dev/null; then
+    echo "[*] Installing Expect..."
+    sudo apt-get update
+    sudo apt-get install -y expect
+else
+    echo "[*] Expect already installed, skipping..."
 fi
 
 # Install Docker
