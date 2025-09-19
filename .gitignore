@@ -6,8 +6,8 @@ full_nodes/.env
 *.env
 
 # Never commit passwords or jwt secrets (these are outside repo, but just in case)
-var/lib/esync/mainnet/password.cfg
-var/lib/esync/mainnet/jwt.mainnet.hex
+var/lib/eSync/mainnet/password.cfg
+var/lib/eSync/mainnet/jwt.mainnet.hex
 
 # Never commit Zone.Identifier files
 *.Zone.Identifier

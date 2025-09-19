@@ -4,11 +4,7 @@ set -euo pipefail
 ### -------------------------
 ### CONFIGURATION
 ### -------------------------
-datadir="/var/lib/esync/mainnet"
-passwordpath="$datadir/password.cfg"
-jwt_file="$datadir/jwt.mainnet.hex"
-setup_script="$HOME/node-setup-current/eth2_scripts/run_setup_mainnet.ps1"
-compose_file="$HOME/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml"
+source ./source_env.sh
 
 ### -------------------------
 ### SYSTEM PREPARATION
@@ -101,64 +97,62 @@ fi
 ### -------------------------
 ### ENSURE DATA DIRECTORIES
 ### -------------------------
-if [ ! -d "$datadir" ]; then
-    echo "[*] Creating main data directory at $datadir..."
-    mkdir -p "$datadir"
+if [ ! -d "$DATA_DIRECTORY" ]; then
+    echo "[*] Creating main data directory at $DATA_DIRECTORY..."
+    mkdir -p "$DATA_DIRECTORY"
 else
     echo "[*] Main data directory already exists, skipping..."
 fi
 
 # Ensure password.cfg is a file and prompt user for password
-if [ -d "$passwordpath" ]; then
-    echo "[*] Removing existing directory $passwordpath..."
-    sudo rm -r "$passwordpath"
+if [ -d "$PASSWORD_PATH" ]; then
+    echo "[*] Removing existing directory $PASSWORD_PATH..."
+    sudo rm -r "$PASSWORD_PATH"
 fi
 
-if [ ! -f "$passwordpath" ]; then
+if [ ! -f "$PASSWORD_PATH" ]; then
     echo "[*] Creating password.cfg file..."
     read -sp "Enter a password for password.cfg: " user_password
     echo ""
-    echo "$user_password" | sudo tee "$passwordpath" > /dev/null
-    sudo chmod 600 "$passwordpath"
-    echo "[*] Password saved to $passwordpath"
+    echo "$user_password" | sudo tee "$PASSWORD_PATH" > /dev/null
+    sudo chmod 600 "$PASSWORD_PATH"
+    echo "[*] Password saved to $PASSWORD_PATH"
 fi
 
 # Create JWT file
-if [ -f "$jwt_file" ]; then
-    echo "[*] JWT secret already exists at $jwt_file, skipping generation..."
+if [ -f "$JWT_FILE" ]; then
+    echo "[*] JWT secret already exists at $JWT_FILE, skipping generation..."
 else
-    echo "[*] Generating JWT secret at $jwt_file..."
-    openssl rand -hex 32 > "$jwt_file"
-    chmod 600 "$jwt_file"
+    echo "[*] Generating JWT secret at $JWT_FILE..."
+    openssl rand -hex 32 > "$JWT_FILE"
+    chmod 600 "$JWT_FILE"
     echo "[*] JWT secret created successfully."
 fi
 
 # Create gened directory for validator keys
-gened_dir="$HOME/node-setup-current/eth2_scripts/gened"
-if [ ! -d "$gened_dir" ]; then
-    echo "[*] Creating gened directory at $gened_dir..."
-    mkdir -p "$gened_dir"
+if [ ! -d "$GENERATED_DIRECTORY" ]; then
+    echo "[*] Creating gened directory at $GENERATED_DIRECTORY..."
+    mkdir -p "$GENERATED_DIRECTORY"
 
     echo "[*] Running setup script for mainnet..."
-    pushd "$gened_dir" >/dev/null
-    pwsh -File "$setup_script"
+    pushd "$GENERATED_DIRECTORY" >/dev/null
+    pwsh -File "$KEY_GENERATION_AND_STAKING_SCRIPT"
     popd >/dev/null
 else
     echo "[*] gened directory already exists, skipping setup..."
 fi
 
 # Create validator directory for Lighthouse if it doesn't exist
-validator_dir="$datadir/datadir-eth2-validator"
-if [ ! -d "$validator_dir" ]; then
-    echo "[*] Creating validator data directory at $validator_dir..."
-    mkdir -p "$validator_dir"
+if [ ! -d "$VALIDATOR_DIRECTORY" ]; then
+    echo "[*] Creating validator data directory at $VALIDATOR_DIRECTORY..."
+    mkdir -p "$VALIDATOR_DIRECTORY"
 else
     echo "[*] Validator data directory already exists, skipping..."
 fi
 
 # Ensure validator keys exist
-if [ ! -d "$gened_dir/validator_keys" ] || [ -z "$(ls -A "$gened_dir/validator_keys" 2>/dev/null)" ]; then
-    echo "[!] ERROR: Expected validator keys in $gened_dir/validator_keys"
+if [ ! -d "$GENERATED_KEY_DIRECTORY" ] || [ -z "$(ls -A "$GENERATED_KEY_DIRECTORY" 2>/dev/null)" ]; then
+    echo "[!] ERROR: Expected validator keys in $GENERATED_KEY_DIRECTORY"
     echo "    Make sure run_setup_mainnet.ps1 has been executed successfully."
     exit 1
 fi
@@ -167,9 +161,9 @@ fi
 ### IMPORT VALIDATOR KEYS
 ### -------------------------
 docker run --rm -it \
-    -v "$gened_dir/validator_keys":/keys \
-    -v "$validator_dir":/root/.lighthouse \
-    -v "$passwordpath":/password.cfg \
+    -v "$GENERATED_KEY_DIRECTORY":/keys \
+    -v "$VALIDATOR_DIRECTORY":/root/.lighthouse \
+    -v "$PASSWORD_PATH":/password.cfg \
     --name validatorimport ecredits/lighthouse:latest \
     lighthouse --network mainnet account validator import \
     --datadir /root/.lighthouse \
@@ -180,16 +174,14 @@ docker run --rm -it \
 ### -------------------------
 ### CREATE .env FILE
 ### -------------------------
-compose_dir=$(dirname "$compose_file")
-env_file="$compose_dir/.env"
 
-if [ ! -f "$env_file" ]; then
-    echo "[*] Creating .env file at $env_file..."
+if [ ! -f "$ENV_FILE" ]; then
+    echo "[*] Creating .env file at $ENV_FILE..."
     read -p "Set the Etherbase address: " etherbase_address
     read -p "Set the Fee recipient address: " fee_recipient_address
     external_ip=$(hostname -I | awk '{print $1}')
 
-    cat <<EOF | tee "$env_file" > /dev/null
+    cat <<EOF | tee "$ENV_FILE" > /dev/null
 ETHERBASE_ADDRESS=$etherbase_address
 FEE_RECIPIENT_ADDRESS=$fee_recipient_address
 EXTERNAL_IP=$external_ip
@@ -197,15 +189,15 @@ EOF
 
     echo "[*] .env file created successfully."
 else
-    echo "[*] .env file already exists at $env_file, skipping..."
+    echo "[*] .env file already exists at $ENV_FILE, skipping..."
 fi
 
 ### -------------------------
 ### START VALIDATOR NODE
 ### -------------------------
-if ! docker compose -f "$compose_file" ps | grep -q "Up"; then
+if ! docker compose -f "$COMPOSE_FILE" ps | grep -q "Up"; then
     echo "[*] Starting validator node with docker-compose..."
-    docker compose -f "$compose_file" up -d
+    docker compose -f "$COMPOSE_FILE" up -d
 else
     echo "[*] Validator node already running, skipping..."
 fi

@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+### -------------------------
+### CONFIGURATION
+### -------------------------
+source ./source_env.sh
+
 POS_VALIDATOR_CONTAINERNAME="full_nodes-validator-1"
 POS_BEACON_CONTAINERNAME="full_nodes-beacon-1"
 POS_GETH_CONTAINERNAME="full_nodes-geth-1"
-datadir="/var/lib/esync/mainnet"
 
 print_node_status() {
     clear
@@ -61,9 +65,8 @@ print_node_status() {
         echo "$health_status_description"
 
         # Count imported validator keys
-        validator_keys_dir="$datadir/datadir-eth2-validator/validators"
-        if [[ -d "$validator_keys_dir" ]]; then
-            number_of_imported_keys_report=$(find "$validator_keys_dir" -type d -name "0x*" | wc -l)
+        if [[ -d "$VALIDATOR_KEY_DIRECTORY" ]]; then
+            number_of_imported_keys_report=$(find "$VALIDATOR_KEY_DIRECTORY" -type d -name "0x*" | wc -l)
         else
             number_of_imported_keys_report=0
         fi

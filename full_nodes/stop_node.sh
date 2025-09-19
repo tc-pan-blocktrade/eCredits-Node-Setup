@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-compose_file="$HOME/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml"
+### -------------------------
+### CONFIGURATION
+### -------------------------
+source ./source_env.sh
 
 echo "[*] Stopping validator node..."
 
-if [ -f "$compose_file" ]; then
-    docker compose -f "$compose_file" down
+if [ -f "$COMPOSE_FILE" ]; then
+    docker compose -f "$COMPOSE_FILE" down
     echo "[✔] Validator node stopped and containers removed."
 else
-    echo "[!] ERROR: Docker Compose file not found at $compose_file"
+    echo "[!] ERROR: Docker Compose file not found at $COMPOSE_FILE"
     exit 1
 fi
 

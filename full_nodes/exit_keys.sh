@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-datadir="/var/lib/esync/mainnet"
-validator_keys_dir="$datadir/datadir-eth2-validator/validators"
-passwordpath="$datadir/password.cfg"
+### -------------------------
+### CONFIGURATION
+### -------------------------
+source ./source_env.sh
 
 exit_phrase="Exit my validator"
 
@@ -10,29 +11,28 @@ exit_keys()
     echo "-------------------------------- Exit keys --------------------------------------"
     
     # Check if lighthouse datadir exists
-    lighthouse_datadir="$datadir/datadir-eth2-validator"
-    if [ ! -d "$lighthouse_datadir" ]; then
-        echo "[!] Lighthouse datadir $lighthouse_datadir does not exist."
+    if [ ! -d "$VALIDATOR_DIRECTORY" ]; then
+        echo "[!] Lighthouse datadir $VALIDATOR_DIRECTORY does not exist."
         echo "    Make sure you've run the validator import process first."
         exit 1
     fi
     
     # Check if validators directory exists
-    if [ ! -d "$validator_keys_dir" ]; then
-        echo "[!] Validator keys directory $validator_keys_dir does not exist."
+    if [ ! -d "$VALIDATOR_KEY_DIRECTORY" ]; then
+        echo "[!] Validator keys directory $VALIDATOR_KEY_DIRECTORY does not exist."
         echo "    Checking lighthouse datadir structure:"
-        ls -la "$lighthouse_datadir"
+        ls -la "$VALIDATOR_DIRECTORY"
         exit 1
     fi
     
-    cd "$validator_keys_dir" || exit 1
+    cd "$VALIDATOR_KEY_DIRECTORY" || exit 1
     echo "Looking for imported validator keys in: $(pwd)"
     
     # List all validator directories
     imported_keys=$(find . -maxdepth 1 -type d -name "0x*" | sed 's|^\./||' | sort)
     
     if [ -z "$imported_keys" ]; then
-        echo "[!] No validator keys found in $validator_keys_dir"
+        echo "[!] No validator keys found in $VALIDATOR_KEY_DIRECTORY"
         ls -la
         exit 1
     fi
@@ -97,7 +97,7 @@ exit_keys()
 exit_key()
 {
     local exit_key=$1
-    local key_dir="$validator_keys_dir/$exit_key"
+    local key_dir="$VALIDATOR_KEY_DIRECTORY/$exit_key"
     
     if [ ! -d "$key_dir" ]; then
         echo "[!] Validator directory $key_dir does not exist, skipping..."
@@ -122,7 +122,7 @@ expect <<EOF
     set timeout -1
     spawn docker run --rm -it --network full_nodes_ecredits \
         -v "$keystore_path:/keystore.json" \
-        -v "$passwordpath:/password.cfg" \
+        -v "$PASSWORD_PATH:/password.cfg" \
         --name validatorexit ecredits/lighthouse:latest \
         lighthouse --network ecs account validator exit \
         --keystore /keystore.json --password-file /password.cfg \

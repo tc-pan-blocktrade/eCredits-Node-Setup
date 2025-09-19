@@ -5,8 +5,8 @@ services:
     networks:
       - ecredits
     volumes:
-      - /var/lib/esync/mainnet/datadir-eth1:/root/.ethereum
-      - /var/lib/esync/mainnet:/etc/config
+      - /var/lib/eSync/mainnet/datadir-eth1:/root/.ethereum
+      - /var/lib/eSync/mainnet:/etc/config
       # This needs to be remounted properly
     restart: on-failure
     hostname: ecs1-node
@@ -55,8 +55,8 @@ services:
     networks:
       - ecredits
     volumes:
-      - /var/lib/esync/mainnet/datadir-eth2:/root/.lighthouse
-      - /var/lib/esync/mainnet:/etc/config
+      - /var/lib/eSync/mainnet/datadir-eth2:/root/.lighthouse
+      - /var/lib/eSync/mainnet:/etc/config
     environment:
       - EXTERNAL_IP=${EXTERNAL_IP}
     restart: on-failure
@@ -96,7 +96,7 @@ services:
     networks:
       - ecredits
     volumes:
-      - /var/lib/esync/mainnet/datadir-eth2-validator/:/root/.lighthouse
+      - /var/lib/eSync/mainnet/datadir-eth2-validator/:/root/.lighthouse
     environment:
       - FEE_RECIPIENT_ADDRESS=${FEE_RECIPIENT_ADDRESS}
     restart: on-failure

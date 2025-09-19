@@ -4,17 +4,13 @@ set -euo pipefail
 ### -------------------------
 ### CONFIGURATION
 ### -------------------------
-compose_file="$HOME/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml"
-datadir="/var/lib/esync/mainnet"
-passwordpath="$datadir/password.cfg"
-gened_dir="$HOME/node-setup-current/eth2_scripts/gened"
-validator_dir="$datadir/datadir-eth2-validator"
+source ./source_env.sh
 
 ### -------------------------
 ### FUNCTION TO CHECK COMPOSE FILE
 ### -------------------------
-if [ ! -f "$compose_file" ]; then
-    echo "[!] ERROR: Docker Compose file not found at $compose_file"
+if [ ! -f "$COMPOSE_FILE" ]; then
+    echo "[!] ERROR: Docker Compose file not found at $COMPOSE_FILE"
     exit 1
 fi
 
@@ -22,16 +18,16 @@ fi
 ### FUNCTION TO IMPORT VALIDATOR KEYS
 ### -------------------------
 import_validator_keys() {
-    if [ ! -d "$gened_dir/validator_keys" ] || [ -z "$(ls -A "$gened_dir/validator_keys" 2>/dev/null)" ]; then
-        echo "[!] ERROR: No validator keys found in $gened_dir/validator_keys"
+    if [ ! -d "$GENERATED_KEY_DIRECTORY" ] || [ -z "$(ls -A "$GENERATED_KEY_DIRECTORY" 2>/dev/null)" ]; then
+        echo "[!] ERROR: No validator keys found in $GENERATED_KEY_DIRECTORY"
         exit 1
     fi
 
     echo "[*] Importing validator keys..."
     docker run --rm -it \
-        -v "$gened_dir/validator_keys":/keys \
-        -v "$validator_dir":/root/.lighthouse \
-        -v "$passwordpath":/password.cfg \
+        -v "$GENERATED_KEY_DIRECTORY":/keys \
+        -v "$VALIDATOR_DIRECTORY":/root/.lighthouse \
+        -v "$PASSWORD_PATH":/password.cfg \
         --name validatorimport ecredits/lighthouse:latest \
         lighthouse --network mainnet account validator import \
         --datadir /root/.lighthouse \
@@ -50,19 +46,19 @@ import_validator_keys
 ### STOP NODES
 ### -------------------------
 echo "[*] Stopping validator node..."
-docker compose -f "$compose_file" down
+docker compose -f "$COMPOSE_FILE" down
 echo "[*] Validator node stopped."
 
 ### -------------------------
 ### START NODES
 ### -------------------------
 echo "[*] Starting validator node..."
-docker compose -f "$compose_file" up -d
+docker compose -f "$COMPOSE_FILE" up -d
 echo "[*] Validator node started."
 
 ### -------------------------
 ### STATUS
 ### -------------------------
 echo "[*] Current node status:"
-docker compose -f "$compose_file" ps
+docker compose -f "$COMPOSE_FILE" ps
 echo "[✔] Nodes restarted successfully."

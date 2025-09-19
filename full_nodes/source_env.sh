@@ -1,0 +1,11 @@
+DATA_DIRECTORY="/var/lib/eSync/mainnet"
+PASSWORD_PATH="$DATA_DIRECTORY/password.cfg"
+JWT_FILE="$DATA_DIRECTORY/jwt.mainnet.hex"
+GENERATED_DIRECTORY="$HOME/node-setup-current/eth2_scripts/gened"
+KEY_GENERATION_AND_STAKING_SCRIPT="$HOME/node-setup-current/eth2_scripts/run_setup_mainnet.ps1"
+VALIDATOR_DIRECTORY="$DATA_DIRECTORY/datadir-eth2-validator"
+VALIDATOR_KEY_DIRECTORY="$DATA_DIRECTORY/datadir-eth2-validator/validators"
+GENERATED_KEY_DIRECTORY="$HOME/node-setup-current/eth2_scripts/gened/validator_keys"
+COMPOSE_FILE="$HOME/node-setup-current/full_nodes/validator.mainnet.docker-compose.yaml"
+COMPOSE_DIR=$(dirname "$COMPOSE_FILE")
+ENV_FILE="$COMPOSE_DIR/.env"
