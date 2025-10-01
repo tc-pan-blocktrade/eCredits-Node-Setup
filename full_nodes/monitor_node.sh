@@ -113,15 +113,15 @@ follow_logs() {
 
 while true; do
     clear
-    echo "============================="
-    echo "   Ethereum Node Dashboard"
-    echo "============================="
+    echo "================================="
+    echo "   Esync Network Node Dashboard"
+    echo "================================="
     echo "1) View Node Status"
     echo "2) Geth Logs"
     echo "3) Beacon Logs"
     echo "4) Validator Logs"
     echo "5) Exit"
-    echo "============================="
+    echo "================================="
     read -p "Select an option [1-5]: " choice
 
     case $choice in
